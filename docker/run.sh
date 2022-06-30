@@ -16,7 +16,7 @@ echo "変数 CLOUDFLARED_SERVICE が指定されていないため起動を中�
 exit 1
 fi
 
-cat <<EOF | tee $HOME/tunnel.yml
+cat <<EOF | tee /tmp/tunnel.yml
 ingress:
   - hostname: $CLOUDFLARED_HOSTNAME
     service: $CLOUDFLARED_SERVICE
@@ -43,8 +43,8 @@ get_tunnel_id () {
 
 tunnel_uuid=$(get_tunnel_id)
 
-yq e ".ingress.[] | select(.hostname != null) | .hostname" "$HOME/tunnel.yml" \
+yq e ".ingress.[] | select(.hostname != null) | .hostname" "/tmp/tunnel.yml" \
   | xargs -n 1 cloudflared tunnel route dns --overwrite-dns "$tunnel_uuid"
 
 # 起動
-cloudflared tunnel --config "$HOME/tunnel.yml" --no-autoupdate run "$tunnel_uuid"
+cloudflared tunnel --config "/tmp/tunnel.yml" --no-autoupdate run "$tunnel_uuid"
